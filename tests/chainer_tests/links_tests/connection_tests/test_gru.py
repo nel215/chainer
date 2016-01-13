@@ -52,18 +52,8 @@ class TestGRU(unittest.TestCase):
                            cuda.to_gpu(self.x))
 
     def check_backward(self, h_data, x_data, y_grad):
-        h = chainer.Variable(h_data)
-        x = chainer.Variable(x_data)
-        y = self.link(h, x)
-
-        y.grad = y_grad
-        y.backward()
-
-        f = lambda: (_gru(self.link, h.data, x.data),)
-        gh, gx = gradient_check.numerical_grad(f, (h.data, x.data), (y.grad,))
-
-        gradient_check.assert_allclose(gh, h.grad, atol=1e-3)
-        gradient_check.assert_allclose(gx, x.grad, atol=1e-3)
+        gradient_check.check_backward(
+            self.link, (h_data, x_data), y_grad, atol=1e-3)
 
     def test_backward_cpu(self):
         self.check_backward(self.h, self.x, self.gy)
